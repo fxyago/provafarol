@@ -46,7 +46,7 @@ public class ItemController {
 	
 	@GetMapping("/itens/{id}")
 	public ResponseEntity<Item> findById(@PathVariable(value="id") Integer id) {
-		Item item = this.repository.findById(id);
+		Item item = this.repository.findById(id).orNull();
 		if (item == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
@@ -63,25 +63,27 @@ public class ItemController {
 	}
 	
 	@PutMapping("/itens/{id}")
-	public ResponseEntity<String> updateItem(@PathVariable("id") long id, @RequestBody Item item) {
-		Item itemFound = this.repository.findById(id).orElse(null);
+	public ResponseEntity<String> updateItem(@PathVariable("id") int id, @RequestBody Item item) {
+		Item itemFound = this.repository.findById(id).orNull();
 		if (itemFound != null) {
 			if (item.getDescricao() != null) {
 				itemFound.setDescricao(item.getDescricao());				
-			} else {
-				item.setDescricao(itemFound.getDescricao());
 			}
 			if (item.getLocalizacao() != null) {
-				itemFound.setLocalizacao(item.getDescricao());				
-			} else {
-				item.setLocalizacao(itemFound.getLocalizacao());
+				itemFound.setLocalizacao(item.getLocalizacao());				
+			}
+			if (item.getDisponibilidade() != null) {
+				itemFound.setDisponibilidade(item.getDisponibilidade());				
+			}
+			if (item.getStatus() != null) {
+				itemFound.setStatus(item.getStatus());				
 			}
 			try {
 				this.repository.save(itemFound);				
 			} catch (ConstraintViolationException cve) {
 				List<String> erros = new ArrayList<>();
 				cve.getConstraintViolations().forEach(t -> erros.add(t.getMessage()));
-				return new ResponseEntity<>(erros.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>(erros.toString(), HttpStatus.NOT_ACCEPTABLE);
 			}
 			return new ResponseEntity<>("Item foi alterado com sucesso.", HttpStatus.OK);
 		} else {
@@ -93,16 +95,16 @@ public class ItemController {
 	public ResponseEntity<String> createItem(@RequestBody Item item) {
 		try {
 			this.repository.save(new Item(item.getCodigo(), item.getDescricao(), item.getLocalizacao()));
-			return new ResponseEntity<>("Item criado com sucesso.", HttpStatus.OK);
+			return new ResponseEntity<>("Item criado com sucesso.", HttpStatus.CREATED);
 		} catch (Exception e) {
 			String message = "Já existe um item cadastrado com esse código";
-			return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(message, HttpStatus.NOT_ACCEPTABLE);
 		}
 	}
 	
 	@DeleteMapping("/itens/{id}")
 	public ResponseEntity<String> deleteItem(@PathVariable("id") int id) {
-		Item itemFound = this.repository.findById(id);
+		Item itemFound = this.repository.findById(id).orNull();
 		if (itemFound != null) {
 			itemFound.setStatus(Status.INATIVO);
 			this.repository.save(itemFound);

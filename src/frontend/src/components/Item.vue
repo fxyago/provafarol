@@ -31,8 +31,8 @@
     <input type="button" v-if="currentItem.disponibilidade === 'DISPONIVEL'"  class="buttonDisponibilidade" @click="updateDisponibilidade('INDISPONIVEL')" value="Pegar">
     <input type="button" v-else class="buttonDisponibilidade" @click="updateDisponibilidade('DISPONIVEL')" value="Devolver">
     <input type="button" class="buttonUpdate" @click="updateItem" value="Atualizar">
-    <input type="button" class="buttonDesativar" @click="deleteItem" value="Desativar">
-    
+    <input type="button" id="desativar" class="buttonDesativar" @click="deleteItem" value="Desativar">
+
     <div v-if="showAlert" class="alert alert-success alert-dismissible fade show" role="alert">
       {{ message }}
       <button type="button" class="close" @click="hideAlert" data-dismiss="alert" aria-label="Close">
@@ -109,13 +109,13 @@ export default {
         .catch(e => {
           console.log(e);
         });
-    }
+    },
   },
   mounted() {
-    this.message = '';
     this.getItem(this.$route.params.id);
+    this.message = '';
   }
-};
+}
 </script>
 
 <style>
